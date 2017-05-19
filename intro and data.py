@@ -1,3 +1,9 @@
+
+
+
+
+
+
 import pandas as pd
 # quandl is an api for querying a companies
 # database for finance information
