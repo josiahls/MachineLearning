@@ -38,7 +38,6 @@ X_lately = X[-forecast_out:]
 X = X[:-forecast_out:]
 
 df.dropna(inplace=True)
-y = np.array(['label'])
 y = np.array(df['label'])
 
 X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.2)
@@ -46,11 +45,16 @@ X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_s
 clf = LinearRegression()
 
 clf.fit(X_train, y_train)
-with open('linearrepression.pickle', 'wb') as f:
+"""NEW CODE"""
+# Note that you can use this in AWS to create the model,
+# but then youu can reuse it in a smaller server since
+# you are not trying to retrain it.
+with open('linearregression.pickle', 'wb') as f:
     pickle.dump(clf, f)
 
 pickle_in = open('linearregression.pickle', 'rb')
 clf = pickle.load(pickle_in)
+"""NEW CODE"""
 
 accuracy = clf.score(X_test, y_test)
 print(accuracy)
