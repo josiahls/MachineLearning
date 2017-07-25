@@ -49,6 +49,7 @@ def best_fit_slope_and_intercept(xs, ys):
     # m = ((mean(xs) * mean(ys) - mean(xs * ys)) /
     #    (mean(xs) * mean(xs) - mean(xs * xs)))
     # print(m)
+    # added text to push
 
     b = meany - m * meanx
     return m, b
