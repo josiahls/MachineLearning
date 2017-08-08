@@ -7,20 +7,16 @@ import matplotlib.pyplot as plt
 from matplotlib import style
 import pickle
 
-#use to display data
+# use to display data
 style.use('ggplot')
 
-
-
-
-
 df = quandl.get('WIKI/GOOGL')
-
 df = df[['Adj. Open', 'Adj. High', 'Adj. Low', 'Adj. Close', 'Adj. Volume']]
-
 df['HL_PCT'] = (df['Adj. High'] - df['Adj. Close']) / df['Adj. Close'] * 100.0
-
 df['PCT_change'] = (df['Adj. Close'] - df['Adj. Open']) / df['Adj. Open'] * 100.0
+
+#         price         X          X              X
+df = df[['Adj. Close', 'HL_PCT', 'PCT_change', 'Adj. Volume']]
 
 forecast_col = 'Adj. Close'
 df.fillna(-99999, inplace=True)
@@ -35,7 +31,7 @@ X = np.array(df.drop(['label'], 1))
 X = preprocessing.scale(X)
 # the stuff we will predict against
 X_lately = X[-forecast_out:]
-X = X[:-forecast_out:]
+X = X[:-forecast_out]
 
 df.dropna(inplace=True)
 y = np.array(df['label'])
@@ -75,7 +71,7 @@ for i in forecast_set:
     next_unix += one_day
     # the date is the index of that data frame
     # anything that is not a number () the labels
-    df.loc[next_date] = [np.nan for _ in range(len(df.columns)-1)] + [i]
+    df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
 
 df['Adj. Close'].plot()
 df['Forecast'].plot()
@@ -83,6 +79,3 @@ plt.legend(loc=4)
 plt.xlabel('Date')
 plt.ylabel('Price')
 plt.show()
-
-
-
