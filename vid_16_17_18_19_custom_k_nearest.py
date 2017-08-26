@@ -42,22 +42,7 @@ import pandas as pd
 import random
 
 
-# style.use('fivethirtyeight')
 
-# dataset = {'k': [[1, 2], [2, 3], [3, 1]], 'r': [[6, 5], [7, 7], [8, 6]]}
-# new_features = [5, 7]
-
-# or [[plt.scatter(ii[0], ii[1], s=100, color=i) for ii in dataset[i]] for i in dataset]
-# for i in dataset:
-#   for ii in dataset[i]:
-#      plt.scatter(ii[0], ii[1], s=100, color=i)
-
-# plt.scatter(new_features[0],new_features[1])
-# plt.show()
-
-# euclid_distance = sqrt((plot1[0] - plot2[0])**2 + (plot1[1] -plot2[1])**2)
-
-# print(euclid_distance)
 
 # data is thedata weare running k nearest on
 # predict is the features we want to group
@@ -89,19 +74,28 @@ def k_nearest_neighbors(data, predict, k=3):
     return vote_result, confidence
 
 
-"""
-result= k_nearest_neighbors(dataset, new_features, k=3)
-print(result)
 
+accuracies = []
+
+style.use('fivethirtyeight')
+
+dataset = {'k': [[1, 2], [2, 3], [3, 1]], 'r': [[6, 5], [7, 7], [8, 6]]}
+new_features = [5, 7]
+
+# or [[plt.scatter(ii[0], ii[1], s=100, color=i) for ii in dataset[i]] for i in dataset]
 for i in dataset:
     for ii in dataset[i]:
         plt.scatter(ii[0], ii[1], s=100, color=i)
 
-plt.scatter(new_features[0],new_features[1], color=result)
-plt.show()
-"""
-accuracies = []
+group_color = k_nearest_neighbors(dataset, new_features)
 
+plt.scatter(new_features[0], new_features[1], s=100,color=group_color[0])
+plt.show()
+
+# euclid_distance = sqrt((plot1[0] - plot2[0])**2 + (plot1[1] -plot2[1])**2)
+
+# print(euclid_distance)
+"""
 for i in range(5):
     df = pd.read_csv("breast-cancer-wisconsin.data.txt")
     df.replace('?', -99999, inplace=True)
@@ -143,3 +137,4 @@ for i in range(5):
     accuracies.append(correct/total)
 
 print(sum(accuracies) / len(accuracies))
+"""
