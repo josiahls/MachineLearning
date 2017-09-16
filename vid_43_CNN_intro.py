@@ -18,6 +18,40 @@ x3 -> weight3 ->
 Usually people dont use a step function. They might use a sigmouyed function which is more s shaped
 which is an activation function
 
+Y = f(xbar * wbar)
+
+A deep neural network might have:
+
+input   hidden layers
+x1      -> n1 ->
+        ->    -> n4     -> n6
+x2      -> n2 ->        ->
+        ->    -> n5     -> n7
+x3      -> n3 ->
+
+This is a deep neural network has more than 1
+hidden layer.
+
+So why did this take so long to use?????
+
+The optimization problem is harder. You need larger amounts of data.
+The typical optimization is by modifying the weights.
+Which the number of weights is massively processing intensive.
+
+Note:
+    You use ImageNet for images
+    Wikipedia for text
+    or chat logs
+    Tatoba
+    CommonCrawl - basically every website that has been parsed
+
+The main point of failure is the data sets.
+
+Note Machine learning reddit can be helpful.
+
+
+
+
 
 
 
