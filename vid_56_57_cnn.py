@@ -77,10 +77,10 @@ def convolutional_neural_network_model(X):
 
     X = tf.reshape(X, shape=[-1,28,28,1])
 
-    conv1 = conv2d(X, weights['W_conv1'])
+    conv1 = tf.nn.relu(conv2d(X, weights['W_conv1']) + biases['B_conv1'])
     conv1 = maxpool2d(conv1)
 
-    conv2 = conv2d(conv1, weights['W_conv2'])
+    conv2 = tf.nn.relu(conv2d(conv1, weights['W_conv2']) + biases['B_conv2'])
     conv2 = maxpool2d(conv2)
 
     fc = tf.reshape(conv2, [-1,7*7*64])

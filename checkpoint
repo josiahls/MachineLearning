@@ -1,0 +1,2 @@
+model_checkpoint_path: "/home/josiah/PycharmProjects/MachineLearning/tflearncnn.model"
+all_model_checkpoint_paths: "/home/josiah/PycharmProjects/MachineLearning/tflearncnn.model"
