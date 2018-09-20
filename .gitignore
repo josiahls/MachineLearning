@@ -44,3 +44,10 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 /sentiment_set.pickle
+/src/ITCS6156MachineLearningCourse/assignment_0/data/
+/src/ITCS6156MachineLearningCourse/josiah_laivins_assignment_1/data/
+/src/ITCS6156MachineLearningCourse/josiah_laivins_assignment_1/data/climate-change-earth-surface-temperature-data/GlobalLandTemperaturesByMajorCity.csv
+/src/ITCS6156MachineLearningCourse/josiah_laivins_assignment_1/data/climate-change-earth-surface-temperature-data/GlobalLandTemperaturesByCountry.csv
+/src/ITCS6156MachineLearningCourse/josiah_laivins_assignment_1/data/climate-change-earth-surface-temperature-data/GlobalLandTemperaturesByState.csv
+/src/ITCS6156MachineLearningCourse/josiah_laivins_assignment_1/data/climate-change-earth-surface-temperature-data/GlobalTemperatures.csv
+/src/ITCS6156MachineLearningCourse/josiah_laivins_assignment_1/data/climate-change-earth-surface-temperature-data/GlobalLandTemperaturesByCity.csv
