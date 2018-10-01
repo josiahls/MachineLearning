@@ -33,6 +33,12 @@ last_lowest_error = 1
 plt.plot(T)
 plt.show()
 
+def compare(X, T, w, wp):
+    y = np.sign(X @ w)
+    yp = np.sign(X @ wp)
+
+    return 1 if np.sum(y == T) >= np.sum(yp == T) else -1
+
 for i in range(maxiter):
 
     converged = True
@@ -50,7 +56,7 @@ for i in range(maxiter):
     if error != 0:
         converged = False
         if last_lowest_error > error:
-            print(f'Setting last_lowest to {error}')
+            print('Setting last_lowest to {error}')
             last_lowest_error = error
             w_pocket = copy(w)
 
