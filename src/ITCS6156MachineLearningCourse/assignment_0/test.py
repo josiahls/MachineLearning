@@ -3,7 +3,6 @@ from abc import ABC, abstractmethod
 import matplotlib.pyplot as plt
 import pandas
 
-
 import collections  # for checking iterable instance
 
 # Super class for machine learning models

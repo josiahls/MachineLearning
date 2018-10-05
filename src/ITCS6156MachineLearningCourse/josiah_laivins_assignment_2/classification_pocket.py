@@ -84,11 +84,12 @@ def train(X: np.array, T: np.array, W: np.array):
                 W += alpha * X[k].reshape(-1, 1) * T[k].reshape(-1, 1)
 
                 if compare(X, T, W, w_pocket) > 0:
+                    converged = False
                     w_pocket[:] = W[:]
 
-                if converged:
-                    print("converged at ", j)
-                    break
+        if converged:
+            print("converged at ", j)
+            break
 
 
 train(X, T, W)
