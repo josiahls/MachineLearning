@@ -51,10 +51,6 @@ N1 = C1.shape[0]
 N2 = C2.shape[0]
 N = N1 + N2
 
-big_x = np.vstack((C1, C2))
-big_t = np.ones(80)
-big_t[:N1] *= -1
-
 
 def gaussian(big_x: np.array, mean: np.array, sigma: np.array):
     """
@@ -102,32 +98,61 @@ def gaussian_parameters(big_x: np.array):
     :param big_x:
     :return:
     """
-    return big_x, np.mean(big_x, axis=0).reshape(-1, 1), np.cov(np.transpose(big_x))
+    return big_x, np.mean(big_x, axis=0).flatten(), np.cov(np.transpose(big_x))
     # return big_x, np.array([[2], [2]]).reshape(-1, 1), np.array([[1, 0], [0, 1]])
 
 
 # ## Next we implement QDA: Quadratic Distribution Analysis
-def QDA(big_x: np.array, t_probability: float, mean=None, sigma=None, target_index=None, big_t=None):
-    _, mean, sigma = gaussian_parameters(big_x)
+def QDA(sub_x: np.array, t_probability: float):
+    _, mean, sigma = gaussian_parameters(sub_x)
+    print(f'Custom Function output 1: {mean} \n {sigma}')
     # Get the probabilities for the positive class
-    gaussian_distribution_pos_class = gaussian(big_x, mean, sigma) * t_probability
-    # Get the probabilities for the negative class
-    gaussian_distribution_neg_class = gaussian(big_x, mean * -1, sigma * -1) * t_probability
+    return gaussian(sub_x, mean, sigma) * t_probability
 
-    return (gaussian_distribution_pos_class, gaussian_distribution_neg_class)
+def old_QDA(big_x: np.array, mu, sigma, prior):
+    sigma_inv = np.linalg.inv(sigma)
+    diffv = big_x - mu
+    return -0.5 * np.log(np.linalg.det(sigma)) \
+        - 0.5 * np.sum(diffv @ sigma_inv * diffv, axis= 1) + np.log(prior)
+
+# Train and Test data
+N1 = C1.shape[0]
+N2 = C2.shape[0]
+N = N1 + N2
+
+Xtrain = np.vstack((C1, C2))
+Ttrain = np.ones(80)
+Ttrain[:N1] *= -1
 
 
-print(f'{gaussian_parameters(big_x)}')
-print(f'{gaussian(*gaussian_parameters(big_x))}')
-final = np.hstack((gaussian(*gaussian_parameters(big_x)), big_x))
-print(f'{final}')
+means, stds = np.mean(Xtrain, 0), np.std(Xtrain, 0)
+Xs = (Xtrain - means) / stds
 
-xs, ys = np.meshgrid(np.linspace(-3,6, 100), np.linspace(-3,7, 100))
-d1, d2 = QDA(big_x, t_probability=0.3)
-print(d1)
+mu1 = np.mean(Xs[:N1], 0)
+mu2 = np.mean(Xs[N1:], 0)
+
+Sigma1 = np.cov(Xs[:N1].T)
+Sigma2 = np.cov(Xs[N1:].T)
 
 
+prior1 = N1 / N
+prior2 = N2 / N
 
+## now compute the discriminant function on test data
+
+xs, ys = np.meshgrid(np.linspace(-3,6, 500), np.linspace(-3,7, 500))
+Xtest = np.vstack((xs.flat, ys.flat)).T
+XtestS = (Xtest-means)/stds
+
+d1 = old_QDA(XtestS, mu1, Sigma1, prior1)
+d2 = old_QDA(XtestS, mu2, Sigma2, prior2)
+
+
+# print(f':Sigma1: {Sigma1} Mean1: {mu1}')
+# print(f':Sigma2: {Sigma2} Mean2: {mu2}')
+#
+# d1 = QDA(Xs[:N1], prior1)
+# d2 = QDA(Xs[N1:], prior2)
 
 fig = plt.figure(figsize=(8,8))
 ax = fig.gca(projection='3d')
@@ -138,18 +163,18 @@ plt.title("QDA Discriminant Functions")
 plt.figure(figsize=(6,6))
 plt.contourf(xs, ys, (d1-d2 > 0).reshape(xs.shape))
 plt.title("Decision Boundary")
-
+plt.show()
 # Plot generative distributions  p(x | Class=k)  starting with discriminant functions
 
 fig = plt.figure(figsize=(8,8))
 ax = fig.gca(projection='3d')
 
-prob1 = np.exp( d1.reshape(xs.shape) - 0.5*big_x.shape[1]*np.log(2*np.pi) - np.log((1.0/3.0)))
-prob2 = np.exp( d2.reshape(xs.shape) - 0.5*big_x.shape[1]*np.log(2*np.pi) - np.log((1.0/3.0)))
+prob1 = np.exp(d1.reshape(xs.shape) - 0.5*big_x.shape[1]*np.log(2*np.pi) - np.log(prior1))
+prob2 = np.exp(d2.reshape(xs.shape) - 0.5*big_x.shape[1]*np.log(2*np.pi) - np.log(prior2))
 ax.plot_surface(xs, ys, prob1, alpha=0.2)
 ax.plot_surface(xs, ys, prob2, alpha=0.4)
-plt.show()
+
 
 plt.ylabel("QDA P(x|Class=k)\n from disc funcs", multialignment="center")
-
+plt.show()
 

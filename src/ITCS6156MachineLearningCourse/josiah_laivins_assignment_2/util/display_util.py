@@ -39,3 +39,11 @@ def show_accuracy(x, t):
     plt.plot(x, label="Result")
     plt.legend()
     plt.show()
+
+
+def show_boundaries(bounary_diff: np.array):
+    xs, ys = np.meshgrid(np.linspace(-3, 6, 500), np.linspace(-3, 7, 500))
+    plt.figure(figsize=(6, 6))
+    plt.contourf(xs, ys, (bounary_diff > 0).reshape(xs.shape))
+    plt.title("Decision Boundary")
+    plt.show()

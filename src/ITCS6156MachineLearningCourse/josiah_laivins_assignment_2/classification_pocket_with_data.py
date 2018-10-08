@@ -14,28 +14,24 @@ import numpy as np
 
 # Load data:
 base_dir = str(Path().absolute())
-n_rows = 900  # None for all
+n_rows = 100  # None for all
 data = pd.read_csv(base_dir + os.sep + 'data' + os.sep + 'stack-overflow-2018-developer-survey' + os.sep +
                    'survey_results_public.csv', nrows=n_rows)
 
 # Features of interest:
-# features = ['Hobby', 'SkipMeals', 'WakeTime', 'HoursComputer', 'RaceEthnicity',
-#             'OpenSource', 'Student', 'FormalEducation', 'UndergradMajor',
-#             'YearsCoding', 'CareerSatisfaction']  # Removed: 'JobSatisfaction' because... that's too easy
-features = ['SkipMeals', 'WakeTime', 'CareerSatisfaction']
+features = ['SkipMeals', 'WakeTime', 'HoursComputer', 'RaceEthnicity', 'CareerSatisfaction']  # Removed: 'JobSatisfaction' because... that's too easy
+# features = ['SkipMeals', 'WakeTime', 'CareerSatisfaction']
 
 # Filter Features:
 data = data[features]
 
 # We want to predict CareerSatisfaction
-classification = 'WakeTime'
+classification = 'CareerSatisfaction'
 # We want this classification to be binary. We will range it from not satisfied to satisfied -1 to +1
 replacement_keys = {'Extremely satisfied': 1, 'Neither satisfied nor dissatisfied': 1,
                     'Moderately satisfied': 1, 'Slightly dissatisfied': -1, 'Slightly satisfied': 1,
                     'Moderately dissatisfied': -1, 'Extremely dissatisfied': -1}
-# replacement_keys = {'Never': -1, '3 - 4 times per week': -1, '1 - 2 times per week': 1,
-#                     'Daily or almost every day': 1}
-#
+
 data = data.replace({classification: replacement_keys})  # Target is now binary
 
 data = data.dropna(axis=0).reset_index(drop=True)  # Drop Null or nan records.
@@ -59,16 +55,16 @@ X_train, X_test, y_train, y_test = train_test_split(x.values, y.values, test_siz
 
 # Start training!!
 clf = PerceptronPocketClassifier(1000, 0.1)
-# clf.train(X_train, y_train)
+clf.train(X_train, y_train)
 
-# print(f'Predicted: \n\n {clf.use(X_test)} \n\nActual: {y_test}')
-# show_accuracy(clf.use(X_test), y_test)
+print(f'Predicted: \n\n {clf.use(X_test)} \n\nActual: {y_test}')
+show_accuracy(clf.use(X_test), y_test)
 
-print('Testing Ground Truth Model')
-ground_truth_clf = Perceptron()
-ground_truth_clf.fit(X_train, y_train.ravel())
-print(f'Score: {ground_truth_clf.score(X_test, y_test.ravel())}')
-show_accuracy(ground_truth_clf.predict(X_test), y_test)
-print(f'Confusion Matrix: {confusion_matrix(y_test.ravel(), ground_truth_clf.predict(X_test))}')
+# print('Testing Ground Truth Model')
+# ground_truth_clf = Perceptron()
+# ground_truth_clf.fit(X_train, y_train.ravel())
+# print(f'Score: {ground_truth_clf.score(X_test, y_test.ravel())}')
+# show_accuracy(ground_truth_clf.predict(X_test), y_test)
+# print(f'Confusion Matrix: {confusion_matrix(y_test.ravel(), ground_truth_clf.predict(X_test))}')
 
 
