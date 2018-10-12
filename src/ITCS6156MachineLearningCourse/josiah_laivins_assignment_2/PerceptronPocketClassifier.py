@@ -34,7 +34,7 @@ class PerceptronPocketClassifier(Classifier):
         self.w_pocket = np.copy(self.w)
 
         # Normalize Training Data:
-        # x = self.normalize(x, reset_fields=True)
+        x = self.normalize(x, reset_fields=True)
 
         for j in range(self.max_iterations):
             print(f'Iteration: {j}')
@@ -69,5 +69,5 @@ class PerceptronPocketClassifier(Classifier):
                 break
 
     def use(self, x: np.ndarray):
-        # x = self.normalize(x)
+        x = self.normalize(x)
         return x @ self.w_pocket

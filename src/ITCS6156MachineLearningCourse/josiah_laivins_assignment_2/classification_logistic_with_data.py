@@ -1,45 +1,10 @@
-# from ITCS6156MachineLearningCourse.josiah_laivins_assignment_2.QDAClassifier import QDAClassifier
-# from ITCS6156MachineLearningCourse.josiah_laivins_assignment_2.util.display_util import *
-# import numpy as np
-# import matplotlib.pyplot as plt
-#
-# mu1 = [-1, -1]
-# cov1 = np.eye(2)
-#
-# mu2 = [2,3]
-# cov2 = np.eye(2) * 3
-#
-# C1 = np.random.multivariate_normal(mu1, cov1, 50)
-# C2 = np.random.multivariate_normal(mu2, cov2, 50)
-#
-# plt.plot(C1[:, 0], C1[:, 1], 'or')
-# plt.plot(C2[:, 0], C2[:, 1], 'xb')
-#
-# plt.xlim([-3, 6])
-# plt.ylim([-3, 7])
-# plt.show()
-#
-# big_x = np.vstack((C1, C2))
-# big_t = np.ones(100)
-# big_t[:50] *= -1
-#
-# clf = QDAClassifier()
-# clf.train(big_x, big_t)
-#
-# show_boundaries(clf.discriminant_functions[-1]-
-#                              clf.discriminant_functions[1])
-#
-# test_big_x = [[0, 0], [5, 5], [2, 5], [8,8]]
-# print(f'{clf.use(test_big_x)}')
-# show_accuracy(clf.use(big_x), big_t)
-
 from pathlib import Path
 import os
 from sklearn.linear_model import Perceptron
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 
-from ITCS6156MachineLearningCourse.josiah_laivins_assignment_2.QDAClassifier import QDAClassifier
+from ITCS6156MachineLearningCourse.josiah_laivins_assignment_2.LRClassifier import LRClassifier
 from ITCS6156MachineLearningCourse.josiah_laivins_assignment_2.util.display_util import *
 import pandas as pd
 import numpy as np
@@ -85,7 +50,7 @@ print("Split data")
 # Split the features into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(x.values, y.values, test_size=0.33)
 
-clf = QDAClassifier()
+clf = LRClassifier()
 clf.train(X_train, y_train)
 
 print(f'{clf.use(X_test)}')

@@ -21,7 +21,7 @@ class QDAClassifier(Classifier):
         scaled_big_x = (big_x - self.global_mean) / self.global_stds
 
         # Split them by their classes
-        for unique in set(big_t):
+        for unique in [np.unique(ll) for ll in big_t]:
             # Get the samples that have that unique value
             indexes = np.where(big_t == unique)
             temp_x = np.copy(scaled_big_x[indexes])
@@ -30,11 +30,7 @@ class QDAClassifier(Classifier):
             prior = float((len(big_t[big_t == unique]) / len(big_t)))
             # Get and save the discriminant function
 
-            xs, ys = np.meshgrid(np.linspace(-3, 6, 500), np.linspace(-3, 7, 500))
-            Xtest = np.vstack((xs.flat, ys.flat)).T
-            XtestS = (Xtest - self.global_mean) / self.global_stds
-            self.discriminant_functions[unique] = self.get_qda(XtestS, mu, sigma, prior)
-            self.discriminant_function_params[unique] = (mu, sigma, prior)
+            self.discriminant_function_params[unique[0]] = (mu, sigma, prior)
 
     def get_qda(self, big_x: np.array, mu, sigma, prior):
         sigma_inv = np.linalg.inv(sigma)
@@ -50,9 +46,6 @@ class QDAClassifier(Classifier):
         for sample in scaled_big_x:
             probabilities: List[float] = []
             for class_value in self.discriminant_function_params:
-                print(f'\n\nSample: {sample} Class to test: {class_value} the resulting prob: '
-                      f'{self.get_qda(np.array(sample).reshape(-1, 1), *self.discriminant_function_params[class_value])}')
-
                 probabilities\
                     .append(max(self.get_qda(np.array(sample).reshape(-1, 1),
                                              *self.discriminant_function_params[class_value])))
