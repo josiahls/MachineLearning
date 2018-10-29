@@ -72,8 +72,8 @@ class RLAgent:
                 trace = np.vstack((trace, self.coord_convert(s1, self.size)))
 
                 # This is SARSA control
-                v = self.Q[s[0], s[1], a1] + alpha * (r + gamma * self.Q[s1[0], s1[1], a1] - self.Q[s[0], s[1], a])
-                self.Q[s[0], s[1], a1] = v
+                v = self.Q[s[0], s[1], a] + alpha * (r + gamma * self.Q[s1[0], s1[1], a1] - self.Q[s[0], s[1], a])
+                self.Q[s[0], s[1], a] = v
 
                 if env.is_goal():  # reached the goal
                     # Setting the Goal location to 0, allows for training
@@ -87,6 +87,9 @@ class RLAgent:
 
             # self.normalize()
             # self.Q[self.env._map == 'H'] = -10
+            # Logging.show_q_interactive(self.Q, show_max=True)
+            # Logging.show_q_interactive(self.Q, show_max=False)
+
             rtrace.append(np.sum(rewards))
             steps.append(step + 1)
 
@@ -102,14 +105,14 @@ class RLAgent:
         # Show the starting state
         s = self.env.get_cur_state()
         # selection an action
-        a = np.argmin(self.Q[s[0], s[1]])
+        a = np.argmax(self.Q[s[0], s[1]])
         temp = np.max(self.Q[s[0], s[1]])
 
         for i in tqdm(range(maxstep)):
             # Move to to the next best state based on the current action
             r = self.env.next(a)
             s = self.env.get_cur_state()
-            a = np.argmin(self.Q[s[0], s[1]])
+            a = np.argmax(self.Q[s[0], s[1]])
             temp = np.max(self.Q[s[0], s[1]])
             # Log the agent movement
             trace = np.vstack((trace, self.coord_convert(s, self.size)))
