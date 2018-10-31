@@ -1,8 +1,6 @@
-from gym.envs.toy_text import BlackjackEnv
-
-from QLearningModel import RLAgent
 import numpy as np
-import copy
+
+from Logging import Logging
 
 deck = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 
@@ -40,6 +38,7 @@ class Player():
         print("Player card: {}".format(self.card))
         print("Player total_balance: {}".format(self.total_balance))
         print("Player is_active: {}".format(self.is_active))
+
 
 class Poker:
     """
@@ -355,26 +354,97 @@ class Poker:
 
         return self.get_current_state(), reward, game_over
 
+
+class PokerEnvWrapper(object):
+    def __init__(self, poker_env: Poker, player_name):
+        # Init the poker envionment
+        self.poker_env = poker_env
+        # Init the states
+        self.player_name = player_name
+        self.state = self.get_cur_state()
+
+        # Init the actions
+        self.n_a = len(self.poker_env.actions)
+        self.actions = self.poker_env.actions
+
+        # Init the size. This needs to be more complex
+        self.size = self.state
+        # The total pot balance could be any of these except...
+        self.size[:] = max(self.state) * len(self.poker_env.all_players)
+        self.size[-3] = 12  # This is the slot for holding the player's current card
+        self.size[-4] = max(self.state)
+        self.size += 1
+        self.size = tuple(self.size)
+
+    def convert_poker_size(self):
+        pass
+
+    def get_size(self):
+        return self.size
+
+    def get_actions(self):
+        return self.poker_env.get_valid_actions(self.player_name)
+
+    def exclude_invalid_regions(self, Q):
+        return Q
+
+    def get_cur_state(self):
+        poker_state = self.poker_env.get_current_state()
+        state = np.array(poker_state['other_stats']).flatten()
+        state = np.hstack((state, poker_state['total_pot_balance']))
+        # noinspection PyComparisonWithNone,PyComparisonWithNone
+        poker_state['player_stats'][poker_state['player_stats'] == None] = 0
+        state = np.hstack((state, poker_state['player_stats']))
+        return state.astype(int)
+
+    def init(self, start):
+        poker = Poker(number_of_player=2)
+        player1 = Player("prajval", start_balance=10, is_computer=0)
+        computer1 = Player("computer1", start_balance=10, is_computer=1)
+        # computer2 = Player("computer2", start_balance=10, is_computer=1)
+        poker.add_player(player1)
+        poker.add_player(computer1)
+        # poker.add_player(computer2)
+        self.poker_env = poker
+
+    def next(self, action):
+        self.poker_env.take_action(self.player_name, action)
+        return self.poker_env.player_play(self.player_name, action)[1]
+
+    def is_goal(self):
+        return False
+
+    def deal(self):
+        return self.poker_env.deal()
+
+
 if __name__ == '__main__':
-    poker = Poker(number_of_player=3)
+    from PokerQLearningModel import RLAgent
+    poker = Poker(number_of_player=2)
     player1 = Player("prajval", start_balance=10, is_computer=0)
     computer1 = Player("computer1", start_balance=10, is_computer=1)
-    computer2 = Player("computer2", start_balance=10, is_computer=1)
+    # computer2 = Player("computer2", start_balance=10, is_computer=1)
     poker.add_player(player1)
     poker.add_player(computer1)
-    poker.add_player(computer2)
+    # poker.add_player(computer2)
+
+    rl = RLAgent(PokerEnvWrapper(poker, "prajval"))
+    rtrace, steps = rl.train_sarsa(start=None, poker=poker, gamma=.99, alpha=.01,
+                                   epsilon=0.1, maxiter=30000)
+
+    Logging.plot_train(rl, rtrace, steps)
     while not poker.deal():
         print("-" * 50)
         print("Deal Start!")
         print("Start State: {}".format(poker.get_current_state()))
         actions = poker.get_valid_actions("prajval")
         print("Available actions for: prajval are {}".format(actions))
-        action_taken = actions[np.random.randint(len(actions))]
+        action_taken = rl.greedy(rl.env.get_cur_state())
         result = poker.player_play("prajval", action_taken)
         while not result[-1]:
             actions = poker.get_valid_actions("prajval")
             print("Available actions for: prajval are {}".format(actions))
-            action_taken = actions[np.random.randint(len(actions))]
+            action_taken = rl.greedy(rl.env.get_cur_state())
             result = poker.player_play("prajval", action_taken)
         print("Final Result: {}".format(result))
         print("*" * 50)

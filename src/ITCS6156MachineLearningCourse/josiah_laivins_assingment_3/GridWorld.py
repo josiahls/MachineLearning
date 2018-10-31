@@ -109,3 +109,7 @@ class GridWorld:
 
     def get_actions(self):
         return self._actions
+
+    def exclude_invalid_regions(self, Q):
+        Q[self._map == 'H'] = -np.inf
+        return Q

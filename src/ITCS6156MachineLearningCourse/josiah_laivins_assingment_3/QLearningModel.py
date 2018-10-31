@@ -4,7 +4,7 @@ from GridWorld import GridWorld
 import numpy as np
 from Logging import *
 
-class RLAgent:
+class RLAgent(object):
     """
         Reinforcement Learning Agent Model for training/testing
         with Tabular function approximation
@@ -25,16 +25,12 @@ class RLAgent:
             return self.greedy(s)
 
     def greedy(self, s):
-        return np.argmax(self.Q[s[0], s[1]])
+        return np.argmax(self.Q[tuple(s)])
 
     def coord_convert(self, s, sz):
         return [s[1], sz[0] - s[0] - 1]
 
-    def normalize(self):
-        if int(np.max(self.Q)) != 0:
-            self.Q /= np.max(self.Q)
-
-    def train(self, start, **params):
+    def train_sarsa(self, start, **params):
 
         # parameters
         gamma = params.pop('gamma', 0.99)
@@ -45,12 +41,13 @@ class RLAgent:
 
         # init self.Q matrix
         self.Q[...] = 0
-        self.Q[self.env._map == 'H'] = -np.inf
+        self.Q = self.env.exclude_invalid_regions(self.Q)
 
         # online train
         # rewards and step trace
         rtrace = []
         steps = []
+        trace = 0
         for j in tqdm(range(maxiter)):
             self.env.init(start)
             # Logging.show_q(self.Q)
@@ -62,6 +59,7 @@ class RLAgent:
             # This changes the position of the robot location to matplot coord
             trace = np.array(self.coord_convert(s, self.size))
             # run simulation for max number of steps
+            step = 0
             for step in range(maxstep):
                 # move
                 r = self.env.next(a)
@@ -72,31 +70,85 @@ class RLAgent:
                 trace = np.vstack((trace, self.coord_convert(s1, self.size)))
 
                 # This is SARSA control
-                v = self.Q[s[0], s[1], a] + alpha * (r + gamma * self.Q[s1[0], s1[1], a1] - self.Q[s[0], s[1], a])
-                self.Q[s[0], s[1], a] = v
+                v = self.Q[tuple(list(s) + list([a]))] + alpha * (r + gamma * self.Q[tuple(list(s1) + list([a1]))] -
+                                                                  self.Q[tuple(list(s) + list([a]))])
+                self.Q[tuple(list(s) + list([a]))] = v
 
-                if env.is_goal():  # reached the goal
+                if self.env.is_goal():  # reached the goal
                     # Setting the Goal location to 0, allows for training
                     # the best path.
                     # self.normalize()
-                    self.Q[s1[0], s1[1], a1] = 0
+                    self.Q[tuple(list(s1) + list([a1]))] = 0
                     break
 
                 s = s1
                 a = a1
 
-            # self.normalize()
-            # self.Q[self.env._map == 'H'] = -10
-            # Logging.show_q_interactive(self.Q, show_max=True)
-            # Logging.show_q_interactive(self.Q, show_max=False)
+            rtrace.append(np.sum(rewards))
+            steps.append(step + 1)
+
+        # Logging.show_q(self.Q)
+        return rtrace, steps, trace  # last trace of trajectory
+
+    def train_q(self, start, **params):
+
+        # parameters
+        gamma = params.pop('gamma', 0.99)
+        alpha = params.pop('alpha', 0.1)
+        epsilon = params.pop('epsilon', 0.1)
+        maxiter = params.pop('maxiter', 1000)
+        maxstep = params.pop('maxstep', 1000)
+
+        # init self.Q matrix
+        self.Q[...] = 0
+        self.Q = self.env.exclude_invalid_regions(self.Q)
+
+        # online train
+        # rewards and step trace
+        rtrace = []
+        steps = []
+        trace = 0
+        for j in tqdm(range(maxiter)):
+            self.env.init(start)
+            # Logging.show_q(self.Q)
+            s = self.env.get_cur_state()
+            # selection an action
+            a = self.epsilon_greed(epsilon, s)
+
+            rewards = []
+            # This changes the position of the robot location to matplot coord
+            trace = np.array(self.coord_convert(s, self.size))
+            # run simulation for max number of steps
+            step = 0
+            for step in range(maxstep):
+                # move
+                r = self.env.next(a)
+                s1 = self.env.get_cur_state()
+                a = self.epsilon_greed(epsilon, s1)
+
+                rewards.append(r)
+                trace = np.vstack((trace, self.coord_convert(s1, self.size)))
+
+                # This is SARSA control
+                v = self.Q[s[0], s[1], a] + alpha * (r + gamma * np.max(self.Q[s1[0], s1[1]]) - self.Q[s[0], s[1], a])
+                self.Q[s[0], s[1], a] = v
+
+                if self.env.is_goal():  # reached the goal
+                    # Setting the Goal location to 0, allows for training
+                    # the best path.
+                    # self.normalize()
+                    self.Q[s1[0], s1[1], a] = 0
+                    break
+
+                s = s1
 
             rtrace.append(np.sum(rewards))
             steps.append(step + 1)
 
-        Logging.show_q(self.Q)
+        # Logging.show_q(self.Q)
         return rtrace, steps, trace  # last trace of trajectory
 
-    def test(self, start, maxstep=1000):
+    def test(self, start, maxstep=1):
         # Init trace array for tracking the agent movement
         trace = np.array(self.coord_convert(start, self.size))
 
@@ -117,7 +169,7 @@ class RLAgent:
             # Log the agent movement
             trace = np.vstack((trace, self.coord_convert(s, self.size)))
 
-            if env.is_goal():  # reached the goal
+            if self.env.is_goal():  # reached the goal
                 # Setting the Goal location to 0, allows for training
                 # the best path.
                 # self.normalize()
@@ -138,9 +190,13 @@ if __name__ == '__main__':
     env.print_map()
 
     model = RLAgent(env)
-    model.train(start=None, gamma=.99, alpha=.01, epsilon=0.1, maxiter=1000, maxstep=1000)
+    rtrace, steps, trace = model.train_sarsa(start=None, gamma=.99, alpha=.01, epsilon=0.1,
+                                             maxiter=1000, maxstep=1000)
+    trace = model.test([0,0])
 
-    Logging.plot_trace(model, [0,0], model.test([0,0]), model.env)
+    Logging.plot_train(model, rtrace, steps, trace, [0,0], env)
+
+
 
     print([2, 3], env.check_state([2, 3]))
     print([0, 0], env.check_state([0, 0]))
