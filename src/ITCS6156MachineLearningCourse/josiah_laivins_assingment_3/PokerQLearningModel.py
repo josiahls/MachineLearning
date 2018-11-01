@@ -1,4 +1,4 @@
-from tqdm import tqdm
+
 import numpy as np
 
 from BlackJack import PokerEnvWrapper
@@ -47,7 +47,7 @@ class RLAgent:
         # rewards and step trace
         rtrace = []
         steps = []
-        for j in tqdm(range(maxiter)):
+        for j in range(maxiter):
             self.env.init(start)
             # Logging.show_q(self.Q)
             s = self.env.get_cur_state()
@@ -96,7 +96,7 @@ class RLAgent:
         # rewards and step trace
         rtrace = []
         steps = []
-        for j in tqdm(range(maxiter)):
+        for j in range(maxiter):
             self.env.init(start)
             # Logging.show_q(self.Q)
             s = self.env.get_cur_state()
@@ -133,7 +133,7 @@ class RLAgent:
         wins = []
         loses = []
 
-        for i in tqdm(range(maxstep)):
+        for i in range(maxstep):
             # Play one game
 
             # Initialize the starting environment

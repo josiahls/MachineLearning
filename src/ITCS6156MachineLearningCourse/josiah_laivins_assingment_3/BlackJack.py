@@ -431,7 +431,7 @@ if __name__ == '__main__':
     # poker.add_player(computer2)
 
     rl = RLAgent(PokerEnvWrapper(poker, "prajval"))
-    iterations = 200
+    iterations = 100000
 
     # Try to load a previous Q
     try:
@@ -445,7 +445,7 @@ if __name__ == '__main__':
         np.save(f'rtrace_{iterations}', rtrace)
         np.save(f'steps_{iterations}', steps)
 
-    Logging.plot_train(rl, rtrace, steps)
+    # Logging.plot_train(rl, rtrace, steps)
     while not poker.deal():
         print("-" * 50)
         print("Deal Start!")
@@ -464,4 +464,4 @@ if __name__ == '__main__':
 
     wins, loses = rl.test(maxstep=iterations)
     print(f'Wins: {np.sum(wins)} Loses: {np.sum(loses)}')
-    Logging.plot_win_loss(rl, loses, wins, steps, rl.env)
+    # Logging.plot_win_loss(rl, loses, wins, steps, rl.env)
