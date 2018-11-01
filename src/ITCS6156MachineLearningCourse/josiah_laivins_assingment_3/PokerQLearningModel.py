@@ -56,6 +56,7 @@ class RLAgent:
 
             rewards = []
             step = 0
+            temp_step = 0
             # run simulation for max number of steps
             while not self.env.poker_env.deal():
                 step += 1
@@ -71,6 +72,10 @@ class RLAgent:
                     (r + gamma * self.Q[tuple(list(s1)+list([a1]))] - self.Q[tuple(list(s)+list([a]))])
 
                 self.Q[tuple(list(s)+list([a]))] = v
+
+                temp_step += 1
+                if temp_step > 100:
+                    break
 
                 s = s1
                 a = a1
@@ -105,6 +110,7 @@ class RLAgent:
 
             rewards = []
             step = 0
+            temp_step= 0
             # run simulation for max number of steps
             while not self.env.poker_env.deal():
                 step += 1
@@ -121,6 +127,10 @@ class RLAgent:
 
                 self.Q[tuple(list(s) + list([a]))] = v
 
+                temp_step += 1
+                if temp_step > 100:
+                    break
+
                 s = s1
 
             rtrace.append(np.sum(rewards))
@@ -131,6 +141,7 @@ class RLAgent:
 
     def test(self, maxstep=1):
         wins = []
+        draws = []
         loses = []
 
         for i in range(maxstep):
@@ -142,7 +153,6 @@ class RLAgent:
             s = self.env.get_cur_state()
             # selection an action
             a = np.argmax(self.Q[tuple(s)])
-            temp = np.max(self.Q[tuple(s)])
 
             temp_step = 0
             while not self.env.poker_env.deal():
@@ -155,13 +165,22 @@ class RLAgent:
                 if temp_step > 100:
                     break
 
+            if temp_step > 100:
+                continue
+
             winner = self.env.poker_env.return_winner(self.env.poker_env.all_players)
 
-            if self.env.player_name in winner:
+            if self.env.player_name in [w.player_name for w in winner] and len(winner) > 1:
+                draws.append(1)
+                wins.append(0)
+                loses.append(0)
+            elif self.env.player_name in [w.player_name for w in winner]:
                 wins.append(1)
                 loses.append(0)
+                draws.append(0)
             else:
                 loses.append(1)
                 wins.append(0)
+                draws.append(0)
 
-        return wins, loses
+        return wins, loses, draws

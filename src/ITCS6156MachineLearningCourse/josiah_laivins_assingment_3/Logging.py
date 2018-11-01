@@ -95,16 +95,20 @@ class Logging:
             plt.ylabel("Agent Path Trace")
 
     @staticmethod
-    def plot_win_loss(agent, losses, wins, steps: list, env=None):
+    def plot_win_loss(agent, losses, wins, draws, steps: list, env=None):
         fig = plt.figure(figsize=(10, 8))
         ax = fig.add_subplot(221)
         ax.plot(losses)
         plt.plot()
         plt.ylabel("losses")
         ax = fig.add_subplot(222)
-        ax.plot(losses)
+        ax.plot(wins)
         plt.plot()
         plt.ylabel("wins")
+        ax = fig.add_subplot(222)
+        ax.plot(draws)
+        plt.plot()
+        plt.ylabel("draws")
         ax1 = fig.add_subplot(223)
         ax1.plot(steps)
         plt.plot()

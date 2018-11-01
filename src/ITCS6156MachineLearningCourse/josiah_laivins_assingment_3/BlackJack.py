@@ -359,7 +359,7 @@ class Poker:
 
 class PokerEnvWrapper(object):
     def __init__(self, poker_env: Poker, player_name):
-        # Init the poker envionment
+        # Init the poker environment
         self.poker_env = poker_env
         # Init the states
         self.player_name = player_name
@@ -431,7 +431,7 @@ if __name__ == '__main__':
     # poker.add_player(computer2)
 
     rl = RLAgent(PokerEnvWrapper(poker, "prajval"))
-    iterations = 100000
+    iterations = 200
 
     # Try to load a previous Q
     try:
@@ -462,6 +462,6 @@ if __name__ == '__main__':
         print("Final Result: {}".format(result))
         print("*" * 50)
 
-    wins, loses = rl.test(maxstep=iterations)
-    print(f'Wins: {np.sum(wins)} Loses: {np.sum(loses)}')
+    wins, loses, draws = rl.test(maxstep=iterations)
+    print(f'Wins: {np.sum(wins)} Loses: {np.sum(loses)} Draws: {np.sum(draws)}')
     # Logging.plot_win_loss(rl, loses, wins, steps, rl.env)
