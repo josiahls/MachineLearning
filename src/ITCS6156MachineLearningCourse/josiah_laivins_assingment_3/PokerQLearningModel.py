@@ -144,12 +144,16 @@ class RLAgent:
             a = np.argmax(self.Q[tuple(s)])
             temp = np.max(self.Q[tuple(s)])
 
+            temp_step = 0
             while not self.env.poker_env.deal():
                 # Move to to the next best state based on the current action
                 r = self.env.next(a)
                 s = self.env.get_cur_state()
                 a = np.argmax(self.Q[tuple(s)])
                 temp = np.max(self.Q[tuple(s)])
+                temp_step += 1
+                if temp_step > 100:
+                    break
 
             winner = self.env.poker_env.return_winner(self.env.poker_env.all_players)
 

@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 
 from Logging import Logging
@@ -430,9 +432,18 @@ if __name__ == '__main__':
 
     rl = RLAgent(PokerEnvWrapper(poker, "prajval"))
     iterations = 200
-    np.save(f'poker_q_{iterations}', rl.Q)
-    rtrace, steps = rl.train_sarsa(start=None, poker=poker, gamma=.99, alpha=.01,
+
+    # Try to load a previous Q
+    try:
+        rl.Q = np.load(f'poker_q_{iterations}')
+        rtrace = np.load(f'rtrace_{iterations}')
+        steps = np.load(f'steps_{iterations}')
+    except IOError:
+        rtrace, steps = rl.train_sarsa(start=None, poker=poker, gamma=.99, alpha=.01,
                                    epsilon=0.1, maxiter=iterations)
+        np.save(f'poker_q_{iterations}', rl.Q)
+        np.save(f'rtrace_{iterations}', rtrace)
+        np.save(f'steps_{iterations}', steps)
 
     Logging.plot_train(rl, rtrace, steps)
     while not poker.deal():
