@@ -435,9 +435,9 @@ if __name__ == '__main__':
 
     # Try to load a previous Q
     try:
-        rl.Q = np.load(f'poker_q_{iterations}')
-        rtrace = np.load(f'rtrace_{iterations}')
-        steps = np.load(f'steps_{iterations}')
+        rl.Q = np.load(f'poker_q_{iterations}.npy')
+        rtrace = np.load(f'rtrace_{iterations}.npy')
+        steps = np.load(f'steps_{iterations}.npy')
     except IOError:
         rtrace, steps = rl.train_sarsa(start=None, poker=poker, gamma=.99, alpha=.01,
                                    epsilon=0.1, maxiter=iterations)
