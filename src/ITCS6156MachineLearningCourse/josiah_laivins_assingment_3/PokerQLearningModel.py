@@ -127,3 +127,37 @@ class RLAgent:
             steps.append(step + 1)
 
         return rtrace, steps  # last trace of trajectory
+
+
+    def test(self, maxstep=1):
+        wins = []
+        loses = []
+
+        for i in tqdm(range(maxstep)):
+            # Play one game
+
+            # Initialize the starting environment
+            self.env.init(None)
+            # Show the starting state
+            s = self.env.get_cur_state()
+            # selection an action
+            a = np.argmax(self.Q[tuple(s)])
+            temp = np.max(self.Q[tuple(s)])
+
+            while not self.env.poker_env.deal():
+                # Move to to the next best state based on the current action
+                r = self.env.next(a)
+                s = self.env.get_cur_state()
+                a = np.argmax(self.Q[tuple(s)])
+                temp = np.max(self.Q[tuple(s)])
+
+            winner = self.env.poker_env.return_winner(self.env.poker_env.all_players)
+
+            if self.env.player_name in winner:
+                wins.append(1)
+                loses.append(0)
+            else:
+                loses.append(1)
+                wins.append(0)
+
+        return wins, loses

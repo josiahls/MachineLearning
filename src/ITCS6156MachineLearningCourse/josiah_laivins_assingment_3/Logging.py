@@ -93,3 +93,20 @@ class Logging:
             ax3 = fig.add_subplot(224)
             Logging.plot_trace(agent, start, trace, env, "trace of the last episode", axis=ax3)
             plt.ylabel("Agent Path Trace")
+
+    @staticmethod
+    def plot_win_loss(agent, losses, wins, steps: list, env=None):
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(221)
+        ax.plot(losses)
+        plt.plot()
+        plt.ylabel("losses")
+        ax = fig.add_subplot(222)
+        ax.plot(losses)
+        plt.plot()
+        plt.ylabel("wins")
+        ax1 = fig.add_subplot(223)
+        ax1.plot(steps)
+        plt.plot()
+        plt.ylabel("# steps")
+        plt.show()

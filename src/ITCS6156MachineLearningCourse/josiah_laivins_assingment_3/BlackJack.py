@@ -429,8 +429,10 @@ if __name__ == '__main__':
     # poker.add_player(computer2)
 
     rl = RLAgent(PokerEnvWrapper(poker, "prajval"))
+    iterations = 200
+    np.save(f'poker_q_{iterations}', rl.Q)
     rtrace, steps = rl.train_sarsa(start=None, poker=poker, gamma=.99, alpha=.01,
-                                   epsilon=0.1, maxiter=30000)
+                                   epsilon=0.1, maxiter=iterations)
 
     Logging.plot_train(rl, rtrace, steps)
     while not poker.deal():
@@ -448,3 +450,7 @@ if __name__ == '__main__':
             result = poker.player_play("prajval", action_taken)
         print("Final Result: {}".format(result))
         print("*" * 50)
+
+    wins, loses = rl.test(maxstep=iterations)
+    print(f'Wins: {np.sum(wins)} Loses: {np.sum(loses)}')
+    Logging.plot_win_loss(rl, loses, wins, steps, rl.env)
