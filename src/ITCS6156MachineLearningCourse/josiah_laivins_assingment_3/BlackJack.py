@@ -375,7 +375,7 @@ class PokerEnvWrapper(object):
         self.size[:] = max(self.state) * len(self.poker_env.all_players)
         self.size[-3] = 12  # This is the slot for holding the player's current card
         self.size[-4] = max(self.state)
-        self.size += 1
+        self.size += 2
         self.size = tuple(self.size)
 
     def convert_poker_size(self):
