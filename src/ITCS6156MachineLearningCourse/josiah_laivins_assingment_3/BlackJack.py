@@ -5,10 +5,14 @@ import numpy as np
 from Logging import Logging
 
 deck = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
-
+PRINT = False
 
 def draw_card():
     return deck[np.random.randint(1, 13)]
+
+def out(msg):
+    if PRINT:
+        print(msg)
 
 
 class Player():
@@ -36,10 +40,10 @@ class Player():
         self.match_bet = False
 
     def get_info(self):
-        print("Player name: {}".format(self.player_name))
-        print("Player card: {}".format(self.card))
-        print("Player total_balance: {}".format(self.total_balance))
-        print("Player is_active: {}".format(self.is_active))
+        out("Player name: {}".format(self.player_name))
+        out("Player card: {}".format(self.card))
+        out("Player total_balance: {}".format(self.total_balance))
+        out("Player is_active: {}".format(self.is_active))
 
 
 class Poker:
@@ -92,10 +96,10 @@ class Poker:
         if len(player_remove) > 0:
             if self.player not in player_remove:
                 for player in player_remove:
-                    print("Removing player: {} due to insufficient funds !!".format(player.player_name))
+                    out("Removing player: {} due to insufficient funds !!".format(player.player_name))
                     self.all_players.remove(player)
             else:
-                print("Player doesnt have balance !")
+                out("Player doesnt have balance !")
                 game_end = True
 
     def deal(self):
@@ -120,7 +124,7 @@ class Poker:
                         self.total_pot_balance += 1
                         self.max_bet = 0
                     else:
-                        print("{} can no longer play the game !".format(_player.player_name))
+                        out("{} can no longer play the game !".format(_player.player_name))
                         reset_game = True
         return reset_game
 
@@ -158,16 +162,16 @@ class Poker:
 
     def print_actions(self, player, action):
         if action == 0:
-            print("{} folds".format(player))
+            out("{} folds".format(player))
         else:
-            print("{} plays {}.".format(player, action))
+            out("{} plays {}.".format(player, action))
 
     def computer_play(self):
         list_player = [_player for _player in self.all_players if
                        _player.player_name != self.player.player_name and _player.is_active == 1 and _player.match_bet == False]
         for player in list_player:
             actions_available = self.get_valid_actions(player.player_name)
-            print("Available actions for: {} are {}".format(player.player_name, actions_available))
+            out("Available actions for: {} are {}".format(player.player_name, actions_available))
             action_taken = actions_available[np.random.randint(len(actions_available))]
             self.print_actions(player.player_name, action_taken)
             if self.max_bet == 0 and action_taken != 0 or self.max_bet < action_taken:
@@ -177,7 +181,7 @@ class Poker:
     def get_player(self, player_name):
         return_player = [player for player in self.all_players if player.player_name == player_name]
         if len(return_player) != 1:
-            print("Invalid Player")
+            out("Invalid Player")
             return None
         else:
             return return_player[0]
@@ -208,11 +212,11 @@ class Poker:
         if winner == "draw":
             active_player = [_player for _player in self.all_players if _player.is_active]
             if len(active_player) == 0:
-                print("Active player cards: {}".format(
+                out("Active player cards: {}".format(
                     [(_player.player_name, _player.card) for _player in self.all_players]))
                 winning_players = self.all_players
             else:
-                print("Active player cards: {}".format(
+                out("Active player cards: {}".format(
                     [(_player.player_name, _player.card) for _player in self.all_players if _player.is_active]))
                 winning_players = self.return_winner(active_player)
 
@@ -237,45 +241,45 @@ class Poker:
                 _player.total_balance += per_player_share
             reward = -self.player.current_bet
 
-        print("Printing winning players: {}".format(' '.join([player.player_name for player in winning_players])))
-        print("Reward : {}".format(reward))
+        out("Printing winning players: {}".format(' '.join([player.player_name for player in winning_players])))
+        out("Reward : {}".format(reward))
         return reward
 
     def check_game_return_reward(self, round_num):
-        print("Check results for Round Number: {}".format(round_num))
+        out("Check results for Round Number: {}".format(round_num))
         if self.check_game() and self.player.is_active == 0:
-            print("Computer folds, Player folds !")
+            out("Computer folds, Player folds !")
             game_over = True
             winner = "draw"
             reward = 0
             return game_over, reward, winner
 
         elif self.check_game() and self.player.is_active:
-            print("Computer folds, Player active !")
+            out("Computer folds, Player active !")
             game_over = True
             reward = self.total_pot_balance
             winner = "player"
             return game_over, reward, winner
 
         elif not self.check_game() and self.player.is_active == 0:
-            print("Computer active, Player folds !")
+            out("Computer active, Player folds !")
             game_over = True
             reward = -self.player.current_bet
             winner = "computer"
             return game_over, reward, winner
 
         if round_num == 1:
-            print("Computer active, Player active ! ")
+            out("Computer active, Player active ! ")
             game_over = False
             reward = 0
             winner = "draw"
             return game_over, reward, winner
 
         else:
-            print("Computer active, Player active in Round 2 ! End game now !")
+            out("Computer active, Player active in Round 2 ! End game now !")
             game_over = True
             active_players = [player for player in self.all_players if player.is_active]
-            print("Active player cards: {}".format([(_player.player_name, _player.card) for _player in active_players]))
+            out("Active player cards: {}".format([(_player.player_name, _player.card) for _player in active_players]))
             winning_players = self.return_winner(active_players)
             if self.player in winning_players:
                 if len(winning_players) > 1:
@@ -316,26 +320,26 @@ class Poker:
             self.update_match()
             if self.player.is_active:
                 if self.player.match_bet and not self.check_computer_status():
-                    print("Player and Computer both Bet Max and match !")
+                    out("Player and Computer both Bet Max and match !")
                     _, reward, winner = self.check_game_return_reward(round_num=1)
                     game_over = True
             else:
                 if self.check_computer_status():
-                    print("Player folds, computer players are active, they will play among themselves !")
+                    out("Player folds, computer players are active, they will play among themselves !")
                     self.computer_play()
                 game_over, reward, winner = self.check_game_return_reward(round_num=1)
 
             if game_over:
-                print("Winner: {}".format(winner))
+                out("Winner: {}".format(winner))
                 new_reward = self.settle_balance(winner)
                 if winner == "draw":
                     reward = new_reward
             else:
                 if self.player.match_bet and self.check_computer_status():
-                    print("Player Bet Max, computer will match now !")
+                    out("Player Bet Max, computer will match now !")
                     self.computer_play()
                     game_over, reward, winner = self.check_game_return_reward(round_num=2)
-                    print("Winner: {}".format(winner))
+                    out("Winner: {}".format(winner))
                     new_reward = self.settle_balance(winner)
                     if winner == "draw":
                         reward = new_reward
@@ -349,7 +353,7 @@ class Poker:
                 self.computer_play()
             game_over = True
             _, reward, winner = self.check_game_return_reward(round_num=2)
-            print("Winner: {}".format(winner))
+            out("Winner: {}".format(winner))
             new_reward = self.settle_balance(winner)
             if winner == "draw":
                 reward = new_reward
@@ -459,8 +463,8 @@ if __name__ == '__main__':
             print("Available actions for: prajval are {}".format(actions))
             action_taken = rl.greedy(rl.env.get_cur_state())
             result = poker.player_play("prajval", action_taken)
-        print("Final Result: {}".format(result))
-        print("*" * 50)
+            print("Final Result: {}".format(result))
+            print("*" * 50)
 
     wins, loses, draws = rl.test(maxstep=iterations)
     print(f'Wins: {np.sum(wins)} Loses: {np.sum(loses)} Draws: {np.sum(draws)}')
