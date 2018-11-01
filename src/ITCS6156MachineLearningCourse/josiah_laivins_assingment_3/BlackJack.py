@@ -435,7 +435,8 @@ if __name__ == '__main__':
     # poker.add_player(computer2)
 
     rl = RLAgent(PokerEnvWrapper(poker, "prajval"))
-    iterations = 200
+    iterations = 1000000
+    max_array_log_size = 1000
 
     # Try to load a previous Q
     try:
@@ -445,6 +446,10 @@ if __name__ == '__main__':
     except IOError:
         rtrace, steps = rl.train_sarsa(start=None, poker=poker, gamma=.99, alpha=.01,
                                    epsilon=0.1, maxiter=iterations)
+
+        if len(rtrace) > max_array_log_size:
+            rtrace = np.average(rtrace.reshape(max_array_log_size, -1), axis=1)
+            steps = np.average(steps.reshape(max_array_log_size, -1), axis=1)
         np.save(f'poker_q_{iterations}', rl.Q)
         np.save(f'rtrace_{iterations}', rtrace)
         np.save(f'steps_{iterations}', steps)

@@ -1,3 +1,4 @@
+from typing import Tuple
 
 import numpy as np
 
@@ -31,7 +32,7 @@ class RLAgent:
     # def coord_convert(self, s, sz):
     #     return [s[1], sz[0] - s[0] - 1]
 
-    def train_sarsa(self, start, **params):
+    def train_sarsa(self, start, **params) -> Tuple[np.array, np.array]:
 
         # parameters
         gamma = params.pop('gamma', 0.99)
@@ -83,9 +84,9 @@ class RLAgent:
             rtrace.append(np.sum(rewards))
             steps.append(step + 1)
 
-        return rtrace, steps  # last trace of trajectory
+        return np.array(rtrace), np.array(steps)  # last trace of trajectory
 
-    def train_q(self, start, **params):
+    def train_q(self, start, **params) -> Tuple[np.array, np.array]:
 
         # parameters
         gamma = params.pop('gamma', 0.99)
@@ -136,7 +137,7 @@ class RLAgent:
             rtrace.append(np.sum(rewards))
             steps.append(step + 1)
 
-        return rtrace, steps  # last trace of trajectory
+        return np.array(rtrace), np.array(steps)  # last trace of trajectory
 
 
     def test(self, maxstep=1):
