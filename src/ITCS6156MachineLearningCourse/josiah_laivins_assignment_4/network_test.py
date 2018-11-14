@@ -57,13 +57,13 @@ norm_Y = encoder.transform(Y).toarray()
 
 
 """ Build Neural Net """
-nn = NeuralNetLogReg()
+nn = NeuralNetLogReg(X_test=norm_X, Y_test=norm_Y)
 nn.add_layer(Layer(norm_X[0].shape, is_input=True, name='Input Layer', use_bias=True))
 nn.add_layer(Layer(32, name='Hidden Layer'))
 nn.add_layer(Layer(len(np.unique(Y)), is_output=True, name='Output Layer'))
 
 """ Train Neural Network """
-nn.train(norm_X, norm_Y, epochs=2000)
+nn.train(norm_X, norm_Y, epochs=200)
 print(f'RMSE train: {nn.log_rmse_train[-1]} Last cost: {nn.cost_log[-1]}')
 
 plt.plot(nn.cost_log)
@@ -85,3 +85,4 @@ plt.show()
 from sklearn.metrics import precision_recall_fscore_support
 metrics = precision_recall_fscore_support(Y, y_predict, average='weighted')
 plot_precision_recall_f1(metrics, ['Precision', 'Recall', 'f Score'])
+plt.show()

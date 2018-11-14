@@ -8,6 +8,7 @@ from tqdm import tqdm_notebook as tqdm
 
 from Layer import Layer
 from NeuralNetwork import NeuralNetLogReg
+from util import plot_k_folds
 
 # %matplotlib inline
 from util import plot_confusion_matrix
@@ -25,8 +26,8 @@ classification_name = {0: 'T-shirt/top',
                        9: 'Ankle boot'}
 
 """ The train and test sets are already split """
-train = pd.read_csv('./data/fashionmnist/fashion-mnist_train.csv', nrows=None)
-test = pd.read_csv('./data/fashionmnist/fashion-mnist_test.csv', nrows=None)
+train = pd.read_csv('./data/fashionmnist/fashion-mnist_train.csv', nrows=300)
+test = pd.read_csv('./data/fashionmnist/fashion-mnist_test.csv', nrows=300)
 
 """ These are images that are 28x28, the column 0 is the label """
 pic_train = np.array(train.iloc[0, 1:]).reshape((28, 28))
@@ -59,25 +60,28 @@ stand_Y = encoder.transform(Y).toarray()
 
 
 """ Set up K-Fold """
-k_folds = 3
+k_folds = 2
 
 # Logs for K and the params to test
-train_params = [{'n_hidden_layers': 1, 'layer_sizes': [32], 'epochs': 500, 'input_bias':False, 'hidden_bias': [False],
+train_params = [{'n_hidden_layers': 1, 'layer_sizes': [32], 'epochs': 50, 'input_bias':False, 'hidden_bias': [False],
                  'activation_type': ['sigmoid']},
-                {'n_hidden_layers': 1, 'layer_sizes': [32], 'epochs': 500, 'input_bias':True, 'hidden_bias': [True],
+                {'n_hidden_layers': 1, 'layer_sizes': [32], 'epochs': 50, 'input_bias':True, 'hidden_bias': [True],
                  'activation_type': ['sigmoid']},
-                {'n_hidden_layers': 1, 'layer_sizes': [16], 'epochs': 500, 'input_bias':True, 'hidden_bias': [True],
-                 'activation_type': ['sigmoid']},
+                # {'n_hidden_layers': 1, 'layer_sizes': [16], 'epochs': 500, 'input_bias':True, 'hidden_bias': [True],
+                #  'activation_type': ['sigmoid']},
                 ]
-rmse_test_per_k = []
-rmse_train_per_k = []
-cost_log_per_k = []
-best_param_per_k = []
+rmse_test_per_iter = []
+rmse_train_per_iter = []
+cost_log_per_iter = []
+best_param_per_iter = []
+
+""" Add unique ids for each param to be identified by """
+for i in range(len(train_params)):
+    train_params[i]['id'] = i
 
 # For each K
 for k in tqdm(range(k_folds), bar_format='r_bar'):
     X_train, X_test, y_train, y_test = train_test_split(stand_X, stand_Y, test_size=0.33)
-    local_rmse = []
 
     # Test each param
     for param in train_params:
@@ -95,33 +99,44 @@ for k in tqdm(range(k_folds), bar_format='r_bar'):
         nn.train(X_train, y_train, epochs=param['epochs'])
 
         # Set test rmse local or res
-        local_rmse.append(nn.log_rmse_test[-1])
+        rmse_test_per_iter.append(nn.log_rmse_test)
+        rmse_train_per_iter.append(nn.log_rmse_train)
+        cost_log_per_iter.append(nn.cost_log)
+        best_param_per_iter.append(param)
 
-    # Ones we have tested all the params, we pick the best one
-    # noinspection PyTypeChecker
-    param = train_params[np.argmin(local_rmse, axis=0)]  # Pick the one with the lowest rmse
+""" Show the parameters and their performance """
+plot_k_folds(k_folds, best_param_per_iter, rmse_test_per_iter, rmse_train_per_iter, cost_log_per_iter)
+plt.show()
 
-    """ Build Neural Net """
-    nn = NeuralNetLogReg(X_train, y_train, X_test, y_test)
-    nn.add_layer(Layer(stand_X[0].shape, is_input=True, name='Input Layer', use_bias=True))
-    # Based on the params, build the network
-    for i in range(param['n_hidden_layers']):
-        nn.add_layer(Layer(param['layer_sizes'][i], name=f'Hidden Layer {i}',
-                           use_bias=param['hidden_bias'][i],
-                           activation=param['activation_type'][i]))
-    nn.add_layer(Layer(y_train.shape[1], is_output=True, name='Output Layer'))
+""" Keep the top 5 best """
+import copy
 
-    """ Train Neural Network """
-    nn.train(X_train, y_train, epochs=param['epochs'])
+top = 2
 
-    # Set test rmse local or res
-    rmse_test_per_k.append(nn.log_rmse_test[-1])
-    rmse_train_per_k.append(nn.log_rmse_train[-1])
-    cost_log_per_k.append(nn.cost_log[-1])
-    best_param_per_k.append(param)
+best_indices = np.array([_[-1] for _ in rmse_test_per_iter]).argsort()[:top]
+copy_best_param_per_iter = copy.deepcopy([best_param_per_iter[i] for i in best_indices])
+_, counts = np.unique([p['id'] for p in copy_best_param_per_iter], return_counts=True)
 
-print('\n\n')
-""" Display the results """
-for k in range(k_folds):
-    print(f'Params: {best_param_per_k[k]}')
-    print(f'Test RMSE: {rmse_test_per_k[k]} Train RMSE: {rmse_train_per_k[k]} Cost: {cost_log_per_k[k]}')
+best_iter = best_indices[counts.argmax()]
+
+# Copy the params because I dont want to accidently reset them...
+copy_rmse_test = rmse_test_per_iter[best_iter]
+copy_rmse_train = rmse_train_per_iter[best_iter]
+copy_cost_log = cost_log_per_iter[best_iter]
+copy_best_param = best_param_per_iter[best_iter]
+
+""" Plot the test and train RMSE """
+plt.figure(figsize=(10,10))
+plt.subplot(3,1,1)
+plt.plot(copy_rmse_test)
+plt.xlabel('Epochs')
+plt.ylabel('RMSE for Test and training')
+plt.plot(copy_rmse_train)
+plt.legend(('Test','Train'),loc='upper left')
+
+plt.subplot(3,1,2)
+plt.plot(copy_cost_log)
+plt.xlabel('Epochs')
+plt.ylabel('Cost')
+
+plt.show()
