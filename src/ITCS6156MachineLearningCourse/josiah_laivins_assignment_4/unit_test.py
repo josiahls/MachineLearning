@@ -40,7 +40,7 @@ class TestNeuralNetwork(unittest.TestCase):
         y = y / 100
         epsilon = 1e-4
         # nn = NeuralNetwork2()
-        nn = NeuralNetLogReg(2)
+        nn = NeuralNetLogReg(x, y, x, y)
         # nn = NeuralNet()
         nn.add_layer(Layer(2, name='Input Layer', is_input=True))
         nn.add_layer(Layer(3, name='Hidden Layer'))
@@ -78,7 +78,7 @@ class TestNeuralNetwork(unittest.TestCase):
         print(f'\n\n {grad}')
 
         print(f'Norm: {np.linalg.norm(grad-numGrad) / np.linalg.norm(grad+numGrad)}')
-        nn.train(x, y, 50000)
+        nn.train(x, y, 2000)
 
         predictions = nn.predict(np.array(x))
         # Goal is [~90, ~70]

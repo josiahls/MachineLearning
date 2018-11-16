@@ -106,12 +106,18 @@ class Layer(object):
 
         if not self._is_output:
             return self.a @ self.w
+        elif self._is_output and self._activation == 'softmax':
+            return self.activation(self.a)
         else:
             return self.a
 
     def activation(self, z: np.array):
         if self._activation == 'sigmoid':
             return 1 / (1 + np.exp(-z))
+        elif self._activation == 'softmax':
+            """ Noted: https://eli.thegreenplace.net/2016/the-softmax-function-and-its-derivative/ """
+            shift_z = z - np.max(z)
+            return np.exp(z) / np.sum(np.exp(z))
         else:
             return 0
 
@@ -121,5 +127,7 @@ class Layer(object):
 
         if self._activation == 'sigmoid':
             return np.exp(-z) / ((1 + np.exp(-z)) ** 2)
+        elif self._activation == 'softmax':
+            return z * (1 - z)
         else:
             return 0

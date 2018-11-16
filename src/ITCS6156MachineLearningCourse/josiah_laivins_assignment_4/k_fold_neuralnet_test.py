@@ -8,7 +8,7 @@ from tqdm import tqdm_notebook as tqdm
 
 from Layer import Layer
 from NeuralNetwork import NeuralNetLogReg
-from util import plot_k_folds
+from util import *
 
 # %matplotlib inline
 from util import plot_confusion_matrix
@@ -64,9 +64,9 @@ k_folds = 2
 
 # Logs for K and the params to test
 train_params = [{'n_hidden_layers': 1, 'layer_sizes': [32], 'epochs': 50, 'input_bias':False, 'hidden_bias': [False],
-                 'activation_type': ['sigmoid']},
+                 'activation_type': ['sigmoid'], 'output_type': None},
                 {'n_hidden_layers': 1, 'layer_sizes': [32], 'epochs': 50, 'input_bias':True, 'hidden_bias': [True],
-                 'activation_type': ['sigmoid']},
+                 'activation_type': ['sigmoid'], 'output_type': 'softmax'},
                 # {'n_hidden_layers': 1, 'layer_sizes': [16], 'epochs': 500, 'input_bias':True, 'hidden_bias': [True],
                 #  'activation_type': ['sigmoid']},
                 ]
@@ -93,7 +93,7 @@ for k in tqdm(range(k_folds), bar_format='r_bar'):
             nn.add_layer(Layer(param['layer_sizes'][i], name=f'Hidden Layer {i}',
                                use_bias=param['hidden_bias'][i],
                                activation=param['activation_type'][i]))
-        nn.add_layer(Layer(y_train.shape[1], is_output=True, name='Output Layer'))
+        nn.add_layer(Layer(y_train.shape[1], is_output=True, name='Output Layer', activation=param['output_type']))
 
         """ Train Neural Network """
         nn.train(X_train, y_train, epochs=param['epochs'])
@@ -129,14 +129,16 @@ copy_best_param = best_param_per_iter[best_iter]
 plt.figure(figsize=(10,10))
 plt.subplot(3,1,1)
 plt.plot(copy_rmse_test)
+plt.title(f'Best Param is: {get_formatted_params(best_param_per_iter[best_iter], include_values=True)} \n\n with final'+
+          f' test RMSE of {rmse_test_per_iter[best_iter][-1]}')
 plt.xlabel('Epochs')
-plt.ylabel('RMSE for Test and training')
+plt.ylabel('RMSE of best for Test and training')
 plt.plot(copy_rmse_train)
 plt.legend(('Test','Train'),loc='upper left')
 
 plt.subplot(3,1,2)
 plt.plot(copy_cost_log)
 plt.xlabel('Epochs')
-plt.ylabel('Cost')
+plt.ylabel('Cost of best')
 
 plt.show()

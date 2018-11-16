@@ -64,7 +64,7 @@ nn.add_layer(Layer(len(np.unique(Y)), is_output=True, name='Output Layer'))
 
 """ Train Neural Network """
 nn.train(norm_X, norm_Y, epochs=200)
-print(f'RMSE train: {nn.log_rmse_train[-1]} Last cost: {nn.cost_log[-1]}')
+# print(f'RMSE train: {nn.log_rmse_train[-1]} Last cost: {nn.cost_log[-1]}')
 
 plt.plot(nn.cost_log)
 plt.show()

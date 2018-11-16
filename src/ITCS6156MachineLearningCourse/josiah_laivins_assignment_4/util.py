@@ -86,14 +86,12 @@ def plot_k_folds(k_folds: int, best_param_per_iter: np.array, rmse_test_per_iter
     metrics = np.array(metrics_list)
     metric_labels = ['K', 'RMSE for Test', 'RMSE for Train', 'Cost', 'Params']
 
-    title = 'Params are shortened to \n'
-    for key in best_param_per_iter[0]:
-        title += key + ' : ' + get_shortened_key(key) + '\n'
+    title = get_formatted_params(best_param_per_iter[0], 'Params are shortened to \n')
 
     height = int(2 * len(best_param_per_iter) * (len(title) * .0001 + 1))
     # print(height)
     debug(f'height for k fold figure is {height}')
-    plt.figure(figsize=(6, height))
+    plt.figure(figsize=(8, height))
     plt.imshow(metrics, interpolation='nearest', cmap=cmap, aspect='auto')
     plt.title(title)
     tick_marks = np.arange(len(metric_labels))
@@ -104,7 +102,7 @@ def plot_k_folds(k_folds: int, best_param_per_iter: np.array, rmse_test_per_iter
         bottom=False,  # ticks along the bottom edge are off
         top=False,  # ticks along the top edge are off
         labelbottom=False,
-        right= False,
+        right=False,
         left=False,
         labelleft=False)
 
@@ -124,6 +122,16 @@ def plot_k_folds(k_folds: int, best_param_per_iter: np.array, rmse_test_per_iter
                      color="black")
 
     plt.tight_layout()
+
+
+def get_formatted_params(parms: dict, prefix='', include_values=False):
+    s = prefix
+    for key in parms:
+        if include_values:
+            s += get_shortened_key(key) + ':' + str(parms[key]) + '\n'
+        else:
+            s += key + ' : ' + get_shortened_key(key) + '\n'
+    return s
 
 
 def get_shortened_key(k: str):
