@@ -75,20 +75,19 @@ def plot_precision_recall_f1(metrics, metric_labels,
     plt.tight_layout()
 
 
-def plot_k_folds(k_folds: int, best_param_per_iter: np.array, rmse_test_per_iter: np.array,
-                 rmse_train_per_iter: np.array, cost_log_per_iter: np.array, title='',
-                 cmap=plt.cm.Blues):
+def plot_k_folds(k_folds: int, best_param_per_iter: np.array, extra_params: tuple,
+                 labels=['K', 'RMSE for Test', 'RMSE for Train', 'Cost', 'Params'], cmap=plt.cm.Blues):
     metrics_list = []
     for i in range(len(best_param_per_iter)):
-        metrics_list.append(np.array([i % k_folds, rmse_test_per_iter[i][-1], rmse_train_per_iter[i][-1],
-                                      cost_log_per_iter[i][-1], 0]))
+        extra_param = tuple([p[i][-1] for p in extra_params])
+        metrics_list.append(np.array([i % k_folds, *extra_param, 0]))
 
     metrics = np.array(metrics_list)
-    metric_labels = ['K', 'RMSE for Test', 'RMSE for Train', 'Cost', 'Params']
+    metric_labels = labels
 
     title = get_formatted_params(best_param_per_iter[0], 'Params are shortened to \n')
 
-    height = int(2 * len(best_param_per_iter) * (len(title) * .0001 + 1))
+    height = int(2 * len(best_param_per_iter) * (len(title) * .0003 + 1))
     # print(height)
     debug(f'height for k fold figure is {height}')
     plt.figure(figsize=(8, height))

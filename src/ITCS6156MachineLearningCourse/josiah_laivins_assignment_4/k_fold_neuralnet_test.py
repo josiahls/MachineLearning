@@ -52,11 +52,12 @@ Y = np.array(combined_X.iloc[:, 0]).reshape(-1, 1)
 """ Normalize and Standardize X and Y """
 from Standardizer import Standardizer
 
-standardizer_x = Standardizer(X)
+standardizer_x = Standardizer(X, is_image=True)
 stand_X = standardizer_x.standardize(X)
 encoder = OneHotEncoder()
 encoder.fit(Y)
 stand_Y = encoder.transform(Y).toarray()
+
 
 
 """ Set up K-Fold """
@@ -64,9 +65,9 @@ k_folds = 2
 
 # Logs for K and the params to test
 train_params = [{'n_hidden_layers': 1, 'layer_sizes': [32], 'epochs': 50, 'input_bias':False, 'hidden_bias': [False],
-                 'activation_type': ['sigmoid'], 'output_type': None},
+                 'activation_type': ['sigmoid']},
                 {'n_hidden_layers': 1, 'layer_sizes': [32], 'epochs': 50, 'input_bias':True, 'hidden_bias': [True],
-                 'activation_type': ['sigmoid'], 'output_type': 'softmax'},
+                 'activation_type': ['sigmoid']},
                 # {'n_hidden_layers': 1, 'layer_sizes': [16], 'epochs': 500, 'input_bias':True, 'hidden_bias': [True],
                 #  'activation_type': ['sigmoid']},
                 ]
@@ -79,24 +80,28 @@ best_param_per_iter = []
 for i in range(len(train_params)):
     train_params[i]['id'] = i
 
+X_train, X_test, y_train, y_test = train_test_split(stand_X, stand_Y, test_size=0.20)
+from_k = 0
 # For each K
 for k in tqdm(range(k_folds), bar_format='r_bar'):
-    X_train, X_test, y_train, y_test = train_test_split(stand_X, stand_Y, test_size=0.33)
+    X_train_per_k = X_train[from_k:from_k+int(X_train.shape[0] / k_folds)]
+    y_train_per_k = y_train[from_k:from_k+int(y_train.shape[0] / k_folds)]
 
+    from_k += from_k+int(X_train.shape[0] / k_folds)
     # Test each param
     for param in train_params:
         """ Build Neural Net """
-        nn = NeuralNetLogReg(X_train, y_train, X_test, y_test)
-        nn.add_layer(Layer(X_train[0].shape, is_input=True, name='Input Layer', use_bias=True))
+        nn = NeuralNetLogReg(X_train_per_k, y_train_per_k, X_test, y_test)
+        nn.add_layer(Layer(X_train_per_k[0].shape, is_input=True, name='Input Layer', use_bias=True))
         # Based on the params, build the network
         for i in range(param['n_hidden_layers']):
             nn.add_layer(Layer(param['layer_sizes'][i], name=f'Hidden Layer {i}',
                                use_bias=param['hidden_bias'][i],
                                activation=param['activation_type'][i]))
-        nn.add_layer(Layer(y_train.shape[1], is_output=True, name='Output Layer', activation=param['output_type']))
+        nn.add_layer(Layer(y_train_per_k.shape[1], is_output=True, name='Output Layer'))
 
         """ Train Neural Network """
-        nn.train(X_train, y_train, epochs=param['epochs'])
+        nn.train(X_train_per_k, y_train_per_k, epochs=param['epochs'])
 
         # Set test rmse local or res
         rmse_test_per_iter.append(nn.log_rmse_test)
@@ -104,14 +109,14 @@ for k in tqdm(range(k_folds), bar_format='r_bar'):
         cost_log_per_iter.append(nn.cost_log)
         best_param_per_iter.append(param)
 
+import copy
+from util import *
+
 """ Show the parameters and their performance """
-plot_k_folds(k_folds, best_param_per_iter, rmse_test_per_iter, rmse_train_per_iter, cost_log_per_iter)
-plt.show()
+plot_k_folds(k_folds, best_param_per_iter, extra_params=(rmse_test_per_iter, rmse_train_per_iter, cost_log_per_iter))
 
 """ Keep the top 5 best """
-import copy
-
-top = 2
+top = 5
 
 best_indices = np.array([_[-1] for _ in rmse_test_per_iter]).argsort()[:top]
 copy_best_param_per_iter = copy.deepcopy([best_param_per_iter[i] for i in best_indices])
@@ -126,7 +131,7 @@ copy_cost_log = cost_log_per_iter[best_iter]
 copy_best_param = best_param_per_iter[best_iter]
 
 """ Plot the test and train RMSE """
-plt.figure(figsize=(10,10))
+plt.figure(figsize=(14,10))
 plt.subplot(3,1,1)
 plt.plot(copy_rmse_test)
 plt.title(f'Best Param is: {get_formatted_params(best_param_per_iter[best_iter], include_values=True)} \n\n with final'+
@@ -140,5 +145,4 @@ plt.subplot(3,1,2)
 plt.plot(copy_cost_log)
 plt.xlabel('Epochs')
 plt.ylabel('Cost of best')
-
 plt.show()
