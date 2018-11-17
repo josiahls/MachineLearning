@@ -43,7 +43,7 @@ print(f'Data loaded. Training X shape: {X_value.shape} Y shape: {Y_value.shape}'
 k_folds = 2
 
 # Logs for K and the params to test
-train_params = [{'struct': [X_value.shape[1], 15, 1]}]
+train_params = [{'struct': [X_value.shape[1], 15, Y_value.shape[1]]}]
 rmse_test_per_iter = []
 rmse_train_per_iter = []
 cost_log_per_iter = []

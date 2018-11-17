@@ -1,11 +1,11 @@
 import numpy as np
 from scipy.optimize import minimize
 import sys
-from logging import *
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-basicConfig(stream=sys.stderr, level=DEBUG)
+from logging import *
+basicConfig(stream=sys.stderr, level=INFO)
 
 
 # noinspection PyMethodMayBeStatic

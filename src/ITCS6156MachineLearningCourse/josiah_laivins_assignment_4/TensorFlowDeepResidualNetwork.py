@@ -1,7 +1,12 @@
 import tensorflow as tf
-
+import copy
+import numpy as np
 
 class TensorFlowDeepResidualNetwork(object):
+    """
+    Referenced: https://blog.waya.ai/deep-residual-learning-9610bb62c355 for res net implementation
+
+    """
 
     def __init__(self, struct: list):
         self.struct = struct
@@ -27,9 +32,6 @@ class TensorFlowDeepResidualNetwork(object):
         return self.model.predict(X)
 
     def get_residual_model(self):
-        img_height = 28
-        img_width = 28
-        img_channels = 1
 
         cardinality = 32
 
@@ -104,39 +106,46 @@ class TensorFlowDeepResidualNetwork(object):
 
                 return y
 
-            # conv1
-            x = tf.keras.layers.Conv2D(64, kernel_size=(7, 7), strides=(2, 2), padding='same')(x)
-            x = add_common_layers(x)
+            for size in self.struct[1:-1]:
 
-            # conv2
-            x = tf.keras.layers.MaxPool2D(pool_size=(3, 3), strides=(2, 2), padding='same')(x)
-            for i in range(3):
-                project_shortcut = True if i == 0 else False
-                x = residual_block(x, 128, 256, _project_shortcut=project_shortcut)
+                init_size = copy.deepcopy(size)
+                # conv1
+                x = tf.keras.layers.Conv2D(init_size, kernel_size=(7, 7), strides=(2, 2), padding='same')(x)
+                x = add_common_layers(x)
 
-            # conv3
-            for i in range(4):
-                # down-sampling is performed by conv3_1, conv4_1, and conv5_1 with a stride of 2
-                strides = (2, 2) if i == 0 else (1, 1)
-                x = residual_block(x, 256, 512, _strides=strides)
+                init_size = init_size*2
+                # conv2
+                x = tf.keras.layers.MaxPool2D(pool_size=(3, 3), strides=(2, 2), padding='same')(x)
+                for i in range(3):
+                    project_shortcut = True if i == 0 else False
+                    x = residual_block(x, init_size, init_size*2, _project_shortcut=project_shortcut)
 
-            # conv4
-            for i in range(6):
-                strides = (2, 2) if i == 0 else (1, 1)
-                x = residual_block(x, 512, 1024, _strides=strides)
+                init_size = init_size*2
+                # conv3
+                for i in range(4):
+                    # down-sampling is performed by conv3_1, conv4_1, and conv5_1 with a stride of 2
+                    strides = (2, 2) if i == 0 else (1, 1)
+                    x = residual_block(x, init_size, init_size*2, _strides=strides)
 
-            # conv5
-            for i in range(3):
-                strides = (2, 2) if i == 0 else (1, 1)
-                x = residual_block(x, 1024, 2048, _strides=strides)
+                init_size = init_size*2
+                # conv4
+                for i in range(6):
+                    strides = (2, 2) if i == 0 else (1, 1)
+                    x = residual_block(x, init_size, init_size*2, _strides=strides)
+
+                # conv5
+                for i in range(3):
+                    strides = (2, 2) if i == 0 else (1, 1)
+                    x = residual_block(x, init_size, init_size*2, _strides=strides)
 
             x = tf.keras.layers.GlobalAveragePooling2D()(x)
-            x = tf.keras.layers.Dense(10)(x)
+            x = tf.keras.layers.Dense(self.struct[-1])(x)
 
             return x
 
-        image_tensor = tf.keras.layers.Input(shape=(784,))
-        reshape_tensor = tf.keras.layers.Reshape(target_shape=(28, 28, 1), input_shape=(784,))(image_tensor)
+        image_tensor = tf.keras.layers.Input(shape=(self.struct[0],))
+        reshape_tensor = tf.keras.layers.Reshape(target_shape=(np.sqrt(self.struct[0]), np.sqrt(self.struct[0]), 1),
+                                                 input_shape=(self.struct[0],))(image_tensor)
         network_output = residual_network(reshape_tensor)
 
         model = tf.keras.models.Model(inputs=[image_tensor], outputs=[network_output])

@@ -66,9 +66,12 @@ k_folds = 2
 
 # Logs for K and the params to test
 train_params = [
-    # {'struct':[X[0].shape[0], 16, stand_Y.shape[1]]},
-    # {'struct': [X[0].shape[0], 32, stand_Y.shape[1]]},
-    {'struct': [X[0].shape[0], 32, 16, stand_Y.shape[1]]}
+    {'struct': [X[0].shape[0], 32, 16, stand_Y.shape[1]], 'arch':'deep'},
+    {'struct': [X[0].shape[0], 64, 32, 16, stand_Y.shape[1]], 'arch': 'deep'},
+    {'struct': [X[0].shape[0], 64, stand_Y.shape[1]], 'arch':'res'},
+    {'struct': [X[0].shape[0], 32, stand_Y.shape[1]], 'arch': 'res'},
+    {'struct': [X[0].shape[0], 32, 16, stand_Y.shape[1]], 'arch':'conv'},
+    {'struct': [X[0].shape[0], 64, 32, 16, stand_Y.shape[1]], 'arch':'conv'},
 ]
 
 rmse_train_per_iter = []
@@ -91,8 +94,15 @@ for k in tqdm(range(k_folds), bar_format='r_bar'):
     # Test each param
     for param in train_params:
         debug(f'Testing param: {param}')
-        """ Build Neural Net """
-        nn = TensorFlowDeepResidualNetwork(param['struct'])
+
+        if param['arch'] == 'deep':
+            """ Build Neural Net """
+            nn = TensorFlowDeepForwardFeedNetwork(param['struct'])
+        if param['arch'] == 'res':
+            """ Build Neural Net """
+            nn = TensorFlowDeepResidualNetwork(param['struct'])
+        if param['arch'] == 'conv':
+            nn = TensorFlowDeepConvolutionalNetwork(param['struct'])
 
         """ Train Neural Network """
         nn.train(X_train_per_k, y_train_per_k, param)

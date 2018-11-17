@@ -1,25 +1,23 @@
 import tensorflow as tf
-
+import numpy as np
 
 class TensorFlowDeepConvolutionalNetwork(object):
 
     def __init__(self, struct: list):
         self.struct = struct
 
-        # Do convolutions in layers
-        conv_layer_pairs = []
-        for size in struct[1:-1]:
-            conv_layer_pairs.append(tf.keras.layers.Conv1D(size, activation=tf.nn.relu, kernel_size=(3)))
-            # conv_layer_pairs.append(tf.keras.layers.MaxPool1D(pool_size=(2, 2), strides=(2, 2)))
-
         self.model = tf.keras.models.Sequential([
-            tf.keras.layers.Reshape(target_shape=(28, 28, 1), input_shape=(784,)),
-            tf.keras.layers.Conv2D(64, kernel_size=3, activation='relu', input_shape=(28, 28, 1)),
-            tf.keras.layers.Conv2D(32, kernel_size=3, activation='relu'),
+            tf.keras.layers.Reshape(target_shape=(np.sqrt(self.struct[0]), np.sqrt(self.struct[0]), 1),
+                                    input_shape=(self.struct[0],)),
+
+            tf.keras.layers.Conv2D(self.struct[1], kernel_size=3, activation='relu', input_shape=(np.sqrt(self.struct[0]),
+                                                                                      np.sqrt(self.struct[0]), 1)),
+
+            *tuple([tf.keras.layers.Conv2D(size, kernel_size=3, activation='relu') for size in self.struct[2:-1]]),
             tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(10, activation='relu'),
-            tf.keras.layers.Dense(10, activation='relu'),
-            tf.keras.layers.Dense(10, activation='softmax'),
+            tf.keras.layers.Dense(self.struct[-1], activation='relu'),
+            tf.keras.layers.Dense(self.struct[-1], activation='relu'),
+            tf.keras.layers.Dense(self.struct[-1], activation='softmax'),
         ])
 
         self.model.compile(optimizer='adam',
