@@ -71,6 +71,7 @@ class NeuralNet:
 
     def __init__(self, nunits):
 
+        self.is_image = False
         self._nLayers = len(nunits) - 1
         self.rho = [1] * self._nLayers
         self._W = []
@@ -176,7 +177,7 @@ class NeuralNet:
 
         if self.stdX == None:
             explore = params.pop('explore', False)
-            self.stdX = Standardizer(X, explore)
+            self.stdX = Standardizer(X, explore, is_image=self.is_image)
         Xs = self.stdX.standardize(X)
         if self.stdT == None and self.stdTarget:
             self.stdT = Standardizer(T)
