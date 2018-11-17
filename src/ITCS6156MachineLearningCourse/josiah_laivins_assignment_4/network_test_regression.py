@@ -15,7 +15,7 @@ from LeeNeuralNet import NeuralNet
 warnings.filterwarnings("ignore", category=DataConversionWarning)
 
 """ Load data """
-data_raw = pd.read_csv('./data/housing_prices/train.csv', nrows=10)
+data_raw = pd.read_csv('./data/housing_prices/train.csv', nrows=None)
 # Drop rows where (specific) columns are nan, and the Id column, and set the rest of nan to 0
 data = data_raw.dropna(subset=list(set(data_raw.columns) - {'Alley', 'PoolQC', 'Fence', 'MiscFeature'}), axis=0)
 data = data.drop(axis=1, columns='Id')
@@ -103,3 +103,18 @@ plt.ylabel('RMSE of best for Test and training')
 
 plt.show()
 
+nn = NeuralNet(best_param_per_iter[best_iter]['struct'])
+""" Train Neural Network """
+nn.train(X_train, y_train, ftracep=True, wtracep=True)
+
+prediction_y = nn.use(X_test)
+
+plt.subplot(3, 1, 2)
+plt.plot(range(len(X_test)), y_test, 'o-', range(len(X_test)), prediction_y, 'o-')
+plt.xlim(0, int(len(X_test)/2))
+plt.legend(('Testing', 'Model'), loc='upper left')
+plt.xlabel('$x$')
+plt.ylabel('Actual and Predicted $f(x)$')
+
+
+plt.show()
