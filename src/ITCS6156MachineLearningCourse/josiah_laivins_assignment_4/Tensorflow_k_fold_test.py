@@ -9,6 +9,7 @@ from tqdm import tqdm_notebook as tqdm
 from NeuralNetworkLogisticRegression import NeuralNetLogReg
 from TensorFlowDeepConvolutionalNetwork import TensorFlowDeepConvolutionalNetwork
 from TensorFlowDeepForwardFeedNetwork import TensorFlowDeepForwardFeedNetwork
+from TensorFlowDeepResidualNetwork import TensorFlowDeepResidualNetwork
 from util import *
 
 # %matplotlib inline
@@ -27,8 +28,8 @@ classification_name = {0: 'T-shirt/top',
                        9: 'Ankle boot'}
 
 """ The train and test sets are already split """
-train = pd.read_csv('./data/fashionmnist/fashion-mnist_train.csv', nrows=600)
-test = pd.read_csv('./data/fashionmnist/fashion-mnist_test.csv', nrows=600)
+train = pd.read_csv('./data/fashionmnist/fashion-mnist_train.csv', nrows=100)
+test = pd.read_csv('./data/fashionmnist/fashion-mnist_test.csv', nrows=100)
 
 """ These are images that are 28x28, the column 0 is the label """
 pic_train = np.array(train.iloc[0, 1:]).reshape((28, 28))
@@ -91,7 +92,7 @@ for k in tqdm(range(k_folds), bar_format='r_bar'):
     for param in train_params:
         debug(f'Testing param: {param}')
         """ Build Neural Net """
-        nn = TensorFlowDeepConvolutionalNetwork(param['struct'])
+        nn = TensorFlowDeepResidualNetwork(param['struct'])
 
         """ Train Neural Network """
         nn.train(X_train_per_k, y_train_per_k, param)
