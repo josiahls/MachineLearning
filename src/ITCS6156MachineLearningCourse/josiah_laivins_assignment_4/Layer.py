@@ -1,5 +1,6 @@
-from logging import debug
-
+from logging import *
+import sys
+basicConfig(stream=sys.stderr, level=INFO)
 import numpy as np
 
 

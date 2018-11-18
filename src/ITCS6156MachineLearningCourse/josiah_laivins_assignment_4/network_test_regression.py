@@ -40,10 +40,12 @@ print(f'Data loaded. Training X shape: {X_value.shape} Y shape: {Y_value.shape}'
 
 
 """ Set up K-Fold """
-k_folds = 2
+k_folds = 5
 
 # Logs for K and the params to test
-train_params = [{'struct': [X_value.shape[1], 15, Y_value.shape[1]]}]
+train_params = [{'struct':[X_value.shape[1], 15, Y_value.shape[1]]},
+                {'struct':[X_value.shape[1], 32, 16, 8, Y_value.shape[1]]},
+                {'struct':[X_value.shape[1], 64, 32, Y_value.shape[1]]}]
 rmse_test_per_iter = []
 rmse_train_per_iter = []
 cost_log_per_iter = []
@@ -60,7 +62,7 @@ for k in tqdm(range(k_folds), bar_format='r_bar'):
     X_train_per_k = X_train[from_k:from_k+int(X_train.shape[0] / k_folds)]
     y_train_per_k = y_train[from_k:from_k+int(y_train.shape[0] / k_folds)]
 
-    from_k += from_k+int(X_train.shape[0] / k_folds)
+    from_k += int(X_train.shape[0] / k_folds)
 
     # Test each param
     for param in train_params:
